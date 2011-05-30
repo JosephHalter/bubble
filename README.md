@@ -132,7 +132,7 @@ You can mix Bubble resources with other Sinatra routes:
 Without Sinatra
 ---------------
 
-If you don't need any additional route you can also skip Sinatra to use Rack directly:
+If you don't need any additional route you can also skip Sinatra and use Rack directly:
 
     class Api < Bubble::Rack
       resource :number
@@ -147,6 +147,21 @@ Persistence layer
 -----------------
 
 Bubble works great with MongoDB, Redis, ActiveRecord, Sequel... You choose!
+
+Limitations
+-----------
+
+Nested resources aren't currently in the scope of this gem. Avoiding nested resources reduces overall complexity.
+
+Instead of:
+
+    /number/4/winner
+
+You can use:
+
+    /winner?number=4
+
+This limitation will probably be removed in a future version.
 
 Links
 -----
