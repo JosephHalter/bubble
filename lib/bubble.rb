@@ -1,3 +1,1 @@
-module Bubble
-end
-require File.expand_path("../bubble/sinatra", __FILE__)
+Dir[File.expand_path("../bubble/*.rb", __FILE__)].each{|f| require f}

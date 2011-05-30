@@ -107,7 +107,7 @@ Then you can try the following queries in terminal:
         curl --data '{' --header "Content-Type: application/json" http://localhost:9292/number
 
 Partial resources
-=================
+-----------------
 
 You can use Bubble to define a resource with only index and show and which class name doesn't match the resource name:
 
@@ -117,7 +117,7 @@ You can use Bubble to define a resource with only index and show and which class
     end
 
 Mix with Sinatra
-================
+----------------
 
 You can mix Bubble resources with other Sinatra routes:
 
@@ -130,7 +130,7 @@ You can mix Bubble resources with other Sinatra routes:
     end
 
 Without Sinatra
-===============
+---------------
 
 If you don't need any additional route you can also skip Sinatra to use Rack directly:
 
@@ -139,16 +139,21 @@ If you don't need any additional route you can also skip Sinatra to use Rack dir
     end
 
 Thread Safety
-=============
+-------------
 
 This gem is thread-safe.
 
 Persistence layer
-=================
+-----------------
 
 Bubble works great with MongoDB, Redis, ActiveRecord, Sequel... You choose!
 
-Conclusion
-==========
+Links
+-----
 
-Because it's fully tested with rspec and cucumber, you can finally concentrate on defining your models instead of wasting your time elsewhere. Now go create the restful API of your dreams.
+Documentation: http://JosephHalter.github.com/bubble/
+
+Conclusion
+----------
+
+Because it's fully tested, you can finally concentrate on defining your models instead of wasting your time elsewhere. Now go create the restful API of your dreams.
