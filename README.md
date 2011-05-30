@@ -1,115 +1,154 @@
 Bubble
 ======
 
-Build scalable restful API using Sinatra, with HATEOS, conditional requests.
+Build scalable restful API with HATEOS and conditional requests.
 
 Dependencies
 ------------
 
 * Ruby >= 1.9.2
-* gem "sinatra", "~> 1.3.0.d"
-* gem "yajl-ruby", "~> 0.8.2"
+* optional: gem "sinatra", "~> 1.3.0.d"
+* optional: gem "yajl-ruby", "~> 0.8.2"
 
-Usage
------
+If yajl is present, Bubble will use it to speed up json parsing and dumping. If not, Bubble will use the ruby built-in json library.
 
-* That could be your Gemfile:
+Common usage
+------------
 
-        source "http://rubygems.org"
-        gem "bubble"
+That could be your Gemfile:
 
-* That could be your config.ru:
+    source "http://rubygems.org"
+    gem "bubble"
+    gem "sinatra", "~> 1.3.0.d"
+    gem "yajl-ruby", "~> 0.8.2"
 
-        $:.unshift File.expand_path "../lib", __FILE__
-        require "api"
-        run Api
+That could be your config.ru:
 
-* And a minimal lib/api.rb could look like that:
+    require "bundler/setup"
+    $:.unshift File.expand_path "../lib", __FILE__
+    require "api"
+    run Api
 
-        require "bundler/setup"
-        require "bubble"
-        require "number"
-        class Api < Bubble
-          resource :number
-        end
+A basic lib/api.rb would look like that:
 
-* Here an example of a model to put in lib/number.rb:
+    require "bubble"
+    require "number"
+    class Api < Sinatra::Base
+      register Bubble::Sinatra
+      resource :number
+    end
 
-        class Number
-          attr_accessor :value, :numberwang
-          def self.search(filter)
-            @@all ||= (0..99).to_a
-            results = @@all.dup
-            results.select!(&:odd?) if filter[:odd]=="1"
-            results
-          end
-          def initialize(opts={})
-            @value = opts[:value].to_i
-          end
-          def odd?
-            @value.odd?
-          end
-          def save
-          end
-        end
+And here is an example model to put in lib/number.rb:
 
-* Run it in any web server (thin, unicorn, passenger, shotgun, etc.):
+    class Number
+      attr_accessor :value, :numberwang
+      def self.search(filter)
+        @@all ||= (0..99).to_a
+        results = @@all.dup
+        results.select!(&:odd?) if filter[:odd]=="1"
+        results
+      end
+      def initialize(opts={})
+        @value = opts[:value].to_i
+      end
+      def odd?
+        @value.odd?
+      end
+      def save
+      end
+    end
 
-        bundle exec rackup
+Run it with any web server (thin, unicorn, passenger, shotgun, etc.):
 
-* Then you can try the following queries in terminal:
+    bundle exec rackup
 
-  * Create
+Then you can try the following queries in terminal:
 
-            curl --data '{"value": 1, "numberwang": false}' --header "Content-Type: application/json" http://localhost:9292/number
-            curl --data '{"value": 2, "numberwang": true}' --header "Content-Type: application/json" http://localhost:9292/number
-            curl --data '{"value": 3, "numberwang": false}' --header "Content-Type: application/json" http://localhost:9292/number
+* Create
 
-  * Index
+        curl --data '{"value": 1, "numberwang": false}' --header "Content-Type: application/json" http://localhost:9292/number
+        curl --data '{"value": 2, "numberwang": true}' --header "Content-Type: application/json" http://localhost:9292/number
+        curl --data '{"value": 3, "numberwang": false}' --header "Content-Type: application/json" http://localhost:9292/number
 
-            curl http://localhost:9292/number
-  
-  * Searches
+* Index
 
-            curl http://localhost:9292/number?odd=1
+        curl http://localhost:9292/number
 
-  * Show
+* Searches
 
-            curl http://localhost:9292/number/1
+        curl http://localhost:9292/number?odd=1
 
-  * Destroy
+* Show
 
-            curl -X DELETE http://localhost:9292/number/3
+        curl http://localhost:9292/number/1
 
-  * Update
+* Destroy
 
-            curl -X PUT --data '{"numberwang": false}' --header "Content-Type: application/json" http://localhost:9292/number/2
+        curl -X DELETE http://localhost:9292/number/3
 
-  * Conditional request
+* Update
 
-            curl --header "ETag: "xMpCOKC5I4INzFCab3WEmw==" http://localhost:9292/number/1
+        curl -X PUT --data '{"numberwang": false}' --header "Content-Type: application/json" http://localhost:9292/number/2
 
-  * Resource not found
+* Conditional request
 
-            curl http://localhost:9292/number/99
+        curl --header "ETag: "xMpCOKC5I4INzFCab3WEmw==" http://localhost:9292/number/1
 
-  * Errors on create
+* Resource not found
 
-            curl --data '{}' --header "Content-Type: application/json" http://localhost:9292/number
+        curl http://localhost:9292/number/99
 
-  * Invalid serialization
+* Errors on create
 
-            curl --data '{' --header "Content-Type: application/json" http://localhost:9292/number
+        curl --data '{}' --header "Content-Type: application/json" http://localhost:9292/number
 
-Sky is the limit
+* Invalid serialization
+
+        curl --data '{' --header "Content-Type: application/json" http://localhost:9292/number
+
+Partial resources
+=================
+
+You can use Bubble to define a resource with only index and show and which class name doesn't match the resource name:
+
+    class Api < Sinatra::Base
+      register Bubble::Sinatra
+      resource :number, :only => [:index, :show], :class_name => "CustomNumber"
+    end
+
+Mix with Sinatra
 ================
 
-* You can use any persistence layer, it works great with MongoDB, Redis, ActiveRecord, Sequel...
+You can mix Bubble resources with other Sinatra routes:
 
-* You can use Bubble to define a resource with only index and show and which class name doesn't match the resource name:
+    class Api < Sinatra::Base
+      register Bubble::Sinatra
+      resource :number
+      get %r{urn:api:number:(.+)} do |id|
+        redirect to("/number/#{id}"), 301
+      end
+    end
 
-        class Api < Bubble
-          resource :number, :only => [:index, :show], :class_name => "CustomNumber"
-        end
+Without Sinatra
+===============
 
-* Because it's fully tested with rspec and cucumber, you can finally concentrate on defining your models instead of wasting your time elsewhere. Now go create the restful API of your dreams.
+If you don't need any additional route you can also skip Sinatra to use Rack directly:
+
+    class Api < Bubble::Rack
+      resource :number
+    end
+
+Thread Safety
+=============
+
+This gem is thread-safe.
+
+Persistence layer
+=================
+
+Bubble works great with MongoDB, Redis, ActiveRecord, Sequel... You choose!
+
+Conclusion
+==========
+
+Because it's fully tested with rspec and cucumber, you can finally concentrate on defining your models instead of wasting your time elsewhere. Now go create the restful API of your dreams.
