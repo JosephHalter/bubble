@@ -1,2 +1,5 @@
 require "bundler/setup"
+require "rack/test"
+require "sinatra/base"
+require "yajl"
 require "bubble"
