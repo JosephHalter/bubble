@@ -74,7 +74,7 @@ Then you can try the following queries in terminal:
 
         curl http://localhost:9292/number
 
-* Searches
+* Search
 
         curl http://localhost:9292/number?odd=1
 
